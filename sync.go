@@ -15,7 +15,7 @@ type Issue struct {
 	Id        int       `json:"id" gorm:"primaryKey"`
 	Summary   string    `json:"Summary" gorm:"size:64"`
 	Status    string    `json:"status" gorm:"size:64"`
-	Di        string    `json:"di" gorm:"size:64"`
+	Di        int       `json:"di"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 }
@@ -23,7 +23,7 @@ type Issue struct {
 // UserUpdate 结构体定义用户更新信息
 type UserUpdate struct {
 	ID    int `json:"id"`
-	Issue `json:"user"`
+	Issue `json:"issue"`
 }
 
 // Config 结构体定义中间件的配置信息
@@ -104,13 +104,13 @@ func (m *UserUpdateMiddleware) Start() error {
 			var update UserUpdate
 			if err := json.Unmarshal(msg.Body, &update); err != nil {
 				log.Printf("JSON解析失败: %v", err)
-				msg.Nack(false, true)
+				msg.Nack(false, false)
 				continue
 			}
 
 			if err := m.db.Model(&Issue{}).Where("id = ?", update.ID).Updates(update.Issue).Error; err != nil {
 				log.Printf("数据更新失败: %v", err)
-				msg.Nack(false, true)
+				msg.Nack(false, false)
 				continue
 			}
 

@@ -5,12 +5,12 @@ import (
 	"log"
 	"time"
 
-	"github.com/streadway/amqp"
+	amqp "github.com/rabbitmq/amqp091-go"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 )
 
-// User 结构体定义用户信息
+// Issue 结构体定义用户信息
 type Issue struct {
 	Id        int       `json:"id" gorm:"primaryKey"`
 	Summary   string    `json:"Summary" gorm:"size:64"`

@@ -104,13 +104,19 @@ func (m *IssueUpdateMiddleware) Start() error {
 			var update IssueUpdate
 			if err := json.Unmarshal(msg.Body, &update); err != nil {
 				log.Printf("JSON解析失败: %v", err)
-				msg.Nack(false, false)
+				if nackErr := msg.Nack(false, false); nackErr != nil {
+					log.Printf("消息丢弃失败，终止消费者: %v", nackErr)
+					break // 终止循环
+				}
 				continue
 			}
 
 			if err := m.db.Model(&Issue{}).Where("id = ?", update.ID).Updates(update.Issue).Error; err != nil {
 				log.Printf("数据更新失败: %v", err)
-				msg.Nack(false, false)
+				if nackErr := msg.Nack(false, false); nackErr != nil {
+					log.Printf("消息丢弃失败，终止消费者: %v", nackErr)
+					break // 终止循环
+				}
 				continue
 			}
 

@@ -114,7 +114,7 @@ func (m *IssueUpdateMiddleware) Start() error {
 				continue
 			}
 
-			log.Printf("用户id：%v 数据更新成功", update.ID)
+			log.Printf("Issue id：%v 数据更新成功", update.ID)
 			if err := msg.Ack(false); err != nil {
 				log.Printf("消息确认失败: %v", err)
 			}

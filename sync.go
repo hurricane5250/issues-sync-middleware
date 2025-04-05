@@ -20,8 +20,8 @@ type Issue struct {
 	UpdatedAt time.Time `json:"updated_at"`
 }
 
-// UserUpdate 结构体定义用户更新信息
-type UserUpdate struct {
+// IssueUpdate 结构体定义用户更新信息
+type IssueUpdate struct {
 	ID    int `json:"id"`
 	Issue `json:"issue"`
 }
@@ -38,8 +38,8 @@ type Config struct {
 	PrefetchCount int
 }
 
-// UserUpdateMiddleware 结构体定义中间件
-type UserUpdateMiddleware struct {
+// IssueUpdateMiddleware 结构体定义中间件
+type IssueUpdateMiddleware struct {
 	db     *gorm.DB
 	conn   *amqp.Connection
 	ch     *amqp.Channel
@@ -47,7 +47,7 @@ type UserUpdateMiddleware struct {
 }
 
 // NewSyncMiddleware 函数用于创建新的中间件实例
-func NewSyncMiddleware(config Config) (*UserUpdateMiddleware, error) {
+func NewSyncMiddleware(config Config) (*IssueUpdateMiddleware, error) {
 	dsn := config.DBUser + ":" + config.DBPass + "@tcp(" + config.DBHost + ":" + config.DBPort + ")/" + config.DBName + "?charset=utf8mb4&parseTime=True&loc=Local"
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	if err != nil {
@@ -65,7 +65,7 @@ func NewSyncMiddleware(config Config) (*UserUpdateMiddleware, error) {
 		return nil, err
 	}
 
-	return &UserUpdateMiddleware{
+	return &IssueUpdateMiddleware{
 		db:     db,
 		conn:   conn,
 		ch:     ch,
@@ -74,7 +74,7 @@ func NewSyncMiddleware(config Config) (*UserUpdateMiddleware, error) {
 }
 
 // Start 方法用于启动中间件
-func (m *UserUpdateMiddleware) Start() error {
+func (m *IssueUpdateMiddleware) Start() error {
 	err := m.ch.Qos(
 		m.config.PrefetchCount, // 预取计数
 		0,                      // 预取大小
@@ -101,7 +101,7 @@ func (m *UserUpdateMiddleware) Start() error {
 
 	go func() {
 		for msg := range msgs {
-			var update UserUpdate
+			var update IssueUpdate
 			if err := json.Unmarshal(msg.Body, &update); err != nil {
 				log.Printf("JSON解析失败: %v", err)
 				msg.Nack(false, false)
@@ -127,7 +127,7 @@ func (m *UserUpdateMiddleware) Start() error {
 }
 
 // Close 方法用于关闭中间件
-func (m *UserUpdateMiddleware) Close() error {
+func (m *IssueUpdateMiddleware) Close() error {
 	if err := m.ch.Close(); err != nil {
 		return err
 	}

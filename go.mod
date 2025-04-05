@@ -1,4 +1,4 @@
-module issues-sync-middleware
+module github.com/hurricane5250/issues-sync-middleware
 
 go 1.24.0
 
